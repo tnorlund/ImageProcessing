@@ -43,10 +43,6 @@ def match_points(image_1, image_2, config):
         matched_points[image_2].append(
             config[image_2]["CORNERS"][corner]
         )
-    print("Matching Corners")
-    print(set(config[image_1]["CORNERS"]) & set(config[image_2]["CORNERS"]))
-    print("Matching Faces")
-    print(set(config[image_1]["MATCHED-CORNERS"]) & set(config[image_2]["MATCHED-CORNERS"]))
     for face in set(config[image_1]["MATCHED-CORNERS"]) & set(config[image_2]["MATCHED-CORNERS"]):
         for face_value in set(config[image_1]["MATCHED-CORNERS"][face]) & set(config[image_2]["MATCHED-CORNERS"][face]):
             matched_points[image_1].append(
