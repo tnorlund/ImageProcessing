@@ -74,7 +74,7 @@ class FrameRateTest {
             // In order to call the threads with the correct distribution of 
             // frames, we must distribute the work between the threads. Note 
             // that the remaining (modulus) frames that cannot be evenly 
-            // distributed are applied to the first numbe of threads.
+            // distributed are applied to the first number of threads.
             for ( size_t i = 0; i < number_threads; i++) {
                 frame_distribution.push_back(
                     number_frames / number_threads + modulus
@@ -86,7 +86,7 @@ class FrameRateTest {
                     " frames with " << number_threads << " threads (" << 
                     batch << " images per batch)" << std::endl;
             // With all of the work distributed among the different threads, we
-            // can run the test by running the private function in seperate 
+            // can run the test by running the private function in separate 
             // threads.
             time ( &timer_begin );
             for (size_t i = 0; i < number_threads; i++) {
@@ -161,7 +161,7 @@ class FrameRateTest {
                     Camera.retrieve(images[i]);
                 }
                 test_mutex.unlock();
-                for ( size_t i = 0; i<batch_size; i++ ) { 
+                for ( size_t i= 0; i<batch_size; i++ ) { 
                     cv::imwrite(
                         "./" + DIRECTORY + "/" + capture_times[i] + ".png", 
                         images[i]
