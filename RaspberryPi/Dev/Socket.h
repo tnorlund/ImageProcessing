@@ -55,14 +55,14 @@ public:
    *   @return local address of socket
    *   @exception SocketException thrown if fetch fails
    */
-  std::string getLocalAddress() throw(SocketException);
+  std::string getLocalAddress();
 
   /**
    *   Get the local port
    *   @return local port of socket
    *   @exception SocketException thrown if fetch fails
    */
-  unsigned short getLocalPort() throw(SocketException);
+  unsigned short getLocalPort();
 
   /**
    *   Set the local port to the specified port and the local address
@@ -70,7 +70,7 @@ public:
    *   @param localPort local port
    *   @exception SocketException thrown if setting local port fails
    */
-  void setLocalPort(unsigned short localPort) throw(SocketException);
+  void setLocalPort(unsigned short localPort);
 
   /**
    *   Set the local port to the specified port and the local address
@@ -81,7 +81,7 @@ public:
    *   @exception SocketException thrown if setting local port or address fails
    */
   void setLocalAddressAndPort(const std::string &localAddress, 
-    unsigned short localPort = 0) throw(SocketException);
+    unsigned short localPort = 0);
 
   /**
    *   If WinSock, unload the WinSock DLLs; otherwise do nothing.  We ignore
@@ -96,7 +96,7 @@ public:
    *   @return number of bytes read, 0 for EOF, and -1 for error
    *   @exception SocketException thrown WinSock clean up fails
    */
-  static void cleanUp() throw( SocketException );
+  static void cleanUp();
 
   /**
    *   Resolve the specified service for the specified protocol to the
@@ -114,7 +114,7 @@ private:
 
 protected:
   int sockDesc;              // Socket descriptor
-  Socket(int type, int protocol) throw(SocketException);
+  Socket(int type, int protocol);
   Socket(int sockDesc);
 };
 
@@ -130,8 +130,7 @@ public:
    *   @param foreignPort foreign port
    *   @exception SocketException thrown if unable to establish connection
    */
-  void connect(const std::string &foreignAddress, unsigned short foreignPort)
-    throw(SocketException);
+  void connect(const std::string &foreignAddress, unsigned short foreignPort);
 
   /**
    *   Write the given buffer to this socket.  Call connect() before
@@ -140,7 +139,7 @@ public:
    *   @param bufferLen number of bytes from buffer to be written
    *   @exception SocketException thrown if unable to send data
    */
-  void send(const void *buffer, int bufferLen) throw(SocketException);
+  void send(const void *buffer, int bufferLen);
 
   /**
    *   Read into the given buffer up to bufferLen bytes data from this
@@ -150,24 +149,24 @@ public:
    *   @return number of bytes read, 0 for EOF, and -1 for error
    *   @exception SocketException thrown if unable to receive data
    */
-  int recv(void *buffer, int bufferLen) throw(SocketException);
+  int recv(void *buffer, int bufferLen);
 
   /**
    *   Get the foreign address.  Call connect() before calling recv()
    *   @return foreign address
    *   @exception SocketException thrown if unable to fetch foreign address
    */
-  std::string getForeignAddress() throw(SocketException);
+  std::string getForeignAddress();
 
   /**
    *   Get the foreign port.  Call connect() before calling recv()
    *   @return foreign port
    *   @exception SocketException thrown if unable to fetch foreign port
    */
-  unsigned short getForeignPort() throw(SocketException);
+  unsigned short getForeignPort();
 
 protected:
-  CommunicatingSocket(int type, int protocol) throw(SocketException);
+  CommunicatingSocket(int type, int protocol);
   CommunicatingSocket(int newConnSD);
 };
 
@@ -180,7 +179,7 @@ public:
    *   Construct a TCP socket with no connection
    *   @exception SocketException thrown if unable to create TCP socket
    */
-  TCPSocket() throw(SocketException);
+  TCPSocket();
 
   /**
    *   Construct a TCP socket with a connection to the given foreign address
@@ -189,8 +188,7 @@ public:
    *   @param foreignPort foreign port
    *   @exception SocketException thrown if unable to create TCP socket
    */
-  TCPSocket(const std::string &foreignAddress, unsigned short foreignPort) 
-      throw(SocketException);
+  TCPSocket(const std::string &foreignAddress, unsigned short foreignPort);
 
 private:
   // Access for TCPServerSocket::accept() connection creation
@@ -212,8 +210,7 @@ public:
    *                   connection requests (default 5)
    *   @exception SocketException thrown if unable to create TCP server socket
    */
-  TCPServerSocket(unsigned short localPort, int queueLen = 5) 
-      throw(SocketException);
+  TCPServerSocket(unsigned short localPort, int queueLen = 5);
 
   /**
    *   Construct a TCP socket for use with a server, accepting connections
@@ -225,17 +222,17 @@ public:
    *   @exception SocketException thrown if unable to create TCP server socket
    */
   TCPServerSocket(const std::string &localAddress, unsigned short localPort,
-      int queueLen = 5) throw(SocketException);
+      int queueLen = 5);
 
   /**
    *   Blocks until a new connection is established on this socket or error
    *   @return new connection socket
    *   @exception SocketException thrown if attempt to accept a new connection fails
    */
-  TCPSocket *accept() throw(SocketException);
+  TCPSocket *accept();
 
 private:
-  void setListen(int queueLen) throw(SocketException);
+  void setListen(int queueLen);
 };
 
 #endif

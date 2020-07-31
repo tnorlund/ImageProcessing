@@ -27,7 +27,7 @@ void MPU6050::writeToConsole(int seconds) {
   // The MPU6050 is now read from and the data is displayed to the console for
   // the given amount of time.
   while (!time_done) {
-    this->read_all_data();
+    this->readAllData();
     std::cout << "Gx=" << Gx << " °/s\t" << "Gy=" << Gy << " °/s\t" << "Gz=" <<
       Gz << " °/s\t" << "Ax=" << Ax << " g\t" << "Ay=" << Ay << " g\t" << "Az="
       << Az << " g" << std::endl;
@@ -47,7 +47,7 @@ void MPU6050::writeToFile(int seconds, std::string fileName) {
   // written. If the file does exist, the output needs to be appended to the
   // file.
   if (!std::filesystem::exists(fileName)) {
-    file_output.open(fileName, atd::ios::out); 
+    file_output.open(fileName, std::ios::out); 
     file_output << "Datetime,Gx,Gy,Gz,Ax,Ay,Az\n";
   } else { file_output.open(fileName, std::ios::app); }
   // With the file initialized, the MPU6050 can be read and the data can be 
@@ -56,7 +56,7 @@ void MPU6050::writeToFile(int seconds, std::string fileName) {
   // from for the given amount of time.
   time(&timer_begin);
   while (!time_done) {
-    this->read_all_data();
+    this->readAllData();
     file_output << std::to_string(
       std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()
@@ -81,12 +81,12 @@ short MPU6050::readRawData(int addr) {
 }
 
 void MPU6050::readAllData() {
-  Acc_x = read_raw_data(ACCEL_XOUT_H);
-  Acc_y = read_raw_data(ACCEL_YOUT_H);
-  Acc_z = read_raw_data(ACCEL_ZOUT_H);
-  Gyro_x = read_raw_data(GYRO_XOUT_H);
-  Gyro_y = read_raw_data(GYRO_YOUT_H);
-  Gyro_z = read_raw_data(GYRO_ZOUT_H);
+  Acc_x = readRawData(ACCEL_XOUT_H);
+  Acc_y = readRawData(ACCEL_YOUT_H);
+  Acc_z = readRawData(ACCEL_ZOUT_H);
+  Gyro_x = readRawData(GYRO_XOUT_H);
+  Gyro_y = readRawData(GYRO_YOUT_H);
+  Gyro_z = readRawData(GYRO_ZOUT_H);
   Ax = Acc_x / 16384.0; Ay = Acc_y / 16384.0; Az = Acc_z / 16384.0;
   Gx = Gyro_x / 131; Gy = Gyro_y / 131; Gz = Gyro_z / 131;
 }
