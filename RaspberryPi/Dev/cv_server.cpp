@@ -1,22 +1,33 @@
+/**
+ *   This accepts a buffered image from a client and writes the image data.
+ */
+
+#include <iostream>
+#include <exception>
+#include <string>
+#include <regex>
+#include <thread>
+#include <vector>
+
+#include <fstream>
+#include <typeinfo>
+
 #include "MPU6050.h"
 #include "Socket.h"
 #include <boost/program_options.hpp>
 
-#include <thread>
-#include <iostream>
-#include <string>
+#include <raspicam/raspicam_cv.h>
+#include <raspicam/raspicam_still_cv.h>
+#include <opencv2/opencv.hpp>
+
+#define IMG_HEIGHT  960
+#define IMG_WIDTH   1280
 
 /**
  *   The size of the received packet.
  */
 const int RCVBUFFERSIZE = 32;
 
-/**
- *   @param sock the client's socket
- */
-void HandleClient(TCPSocket *sock) {
-  std::cout << "Handling the client's socket" << std::endl;
-}
 
 /**
  *   Handle the parameters given in the command line.
@@ -62,8 +73,14 @@ bool processCommandLine(int argc, char** argv,
  *   @param clientSocket the open socket used to accept the packet
  */
 void HandleTCPClient(TCPSocket *clientSocket) {
-  char messageBuffer[RCVBUFFERSIZE];
+  char messageBuffer[IMG_HEIGHT * IMG_WIDTH * 3];
   int messageLength;
+  
+  cv::Mat img = cv::Mat::zeros( IMG_HEIGHT, IMG_WIDTH, CV_8UC3);
+  int  imgSize = img.total()*img.elemSize();
+  uchar sockData[imgSize];
+  int bytes = 0;
+  int ptr=0;
     
   std::cout << "Handling client ";
   try {
@@ -79,14 +96,33 @@ void HandleTCPClient(TCPSocket *clientSocket) {
   }
   std::cout << " with thread " << std::this_thread::get_id() << std::endl;
 
-  // While the client is sending the message, continue to accept it and echo 
-  // the message back.
-  while(
-    (messageLength = clientSocket->recv(messageBuffer, RCVBUFFERSIZE)) > 0
-  ) {
-    clientSocket->send(messageBuffer, messageLength);
+  // for ()
+  std::cout << "IMG_HEIGHT * IMG_WIDTH * 3: " << IMG_HEIGHT * IMG_WIDTH * 3 << std::endl;
+  std::cout << "(IMG_HEIGHT * IMG_WIDTH * 3) / RCVBUFFERSIZE: " << (IMG_HEIGHT * IMG_WIDTH * 3) / RCVBUFFERSIZE << std::endl;
+
+  for (int i = 0; i < imgSize; i += bytes) {
+    bytes = clientSocket->recv(sockData+i, IMG_HEIGHT * IMG_WIDTH * 3);
+    std::cout << bytes << std::endl;
   }
-  
+
+  std::cout << "sockData[0] type: " << typeid(sockData[0]).name() << std::endl;
+
+  // messageLength = clientSocket->recv(sockData, IMG_HEIGHT * IMG_WIDTH * 3);
+  std::ofstream myfile;
+  myfile.open ("server.txt");
+  myfile << sockData;
+  myfile.close();
+
+
+
+  for (size_t i = 0; i < IMG_HEIGHT; i++) {
+    for (size_t j = 0; j < IMG_WIDTH; j++) {
+      img.at<cv::Vec3b>(i,j) = cv::Vec3b(sockData[ptr+0],sockData[ptr+1],sockData[ptr+2]);
+      ptr = ptr + 3;
+    }
+  }
+  cv::imwrite("Tyler_Norlund_server.png", img);
+
   // Luckily, the destructor of the socket closes everything.
 }
 

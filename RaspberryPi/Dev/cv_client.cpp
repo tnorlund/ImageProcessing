@@ -1,11 +1,25 @@
+/**
+ *   This takes a picture with the connected camera and sends it to the server.
+ */
+
 #include <iostream>
 #include <exception>
 #include <string>
 #include <regex>
 
+#include <fstream>
+#include <typeinfo>
+
 #include "MPU6050.h"
 #include "Socket.h"
 #include <boost/program_options.hpp>
+
+#include <raspicam/raspicam_cv.h>
+#include <raspicam/raspicam_still_cv.h>
+#include <opencv2/opencv.hpp>
+
+#define IMG_HEIGHT  960
+#define IMG_WIDTH   1280
 
 /**
  *   The size of the received packet.
@@ -45,13 +59,11 @@ void checkCameraConfiguration() {
  *   Handle the parameters given in the command line.
  * 
  *   @param server the ip of the server
- *   @param message the message sent to the server
  *   @param port the port used to connect to the server
  *   @returns whether the parameters passed are proper or not
  */
 bool processCommandLine(int argc, char** argv,
                           std::string& server,
-                          std::string& message,
                           std::string& port) {
   try {
     boost::program_options::options_description description("Allowed options");
@@ -59,8 +71,6 @@ bool processCommandLine(int argc, char** argv,
       ("help,h", "Help screen")
       ("server,s", boost::program_options::value(&server)->required(), 
         "the server IP address")
-      ("message,m", boost::program_options::value(&message)->required(), 
-        "the message sent to the server")
       ("port,p", boost::program_options::value(&port)->required(), 
         "the port used to connect to the server");
     
@@ -87,65 +97,52 @@ bool processCommandLine(int argc, char** argv,
   return true;
 }
 
-
 int main(int argc, char** argv) {
   bool result;
-  std::string server, message, port;
-  int messageLength;
+  std::string server, port;
   unsigned short clientPort;
-  char echoBuffer[RCVBUFFERSIZE + 1];
-  /**
-   *   The character buffer used to store what is being sent to the server.
-   */
-  char * messageBuffer;
-  int bytesReceived = 0;
-  int totalBytesReceived = 0;
+  int imageSize;
+  char *buf = (char *)malloc(IMG_HEIGHT * IMG_WIDTH * 3);
+  cv::Mat frame(IMG_HEIGHT, IMG_WIDTH, CV_8UC3, buf);
+  raspicam::RaspiCam_Cv Camera;
 
   // Handle the arguments passed via command line
-  result = processCommandLine(argc, argv, server, message, port);
+  result = processCommandLine(argc, argv, server, port);
   if (!result)
     return 1;
 
   // Check to see if the camera is connected an accesible.
   checkCameraConfiguration();
 
-  // The TCP socket uses a buffer to stream data. In order to use the buffer, 
-  // the string passed as a command line argumenet must be discretized as an
-  // array of characters.
-  messageBuffer = (char *)malloc((message.size() + 1) * sizeof(char));
-  message.copy(messageBuffer, message.size() + 1);
-  messageBuffer[message.size() + 1] = '\0';
-
-  messageLength = message.length();
   clientPort = std::stoi(port);
 
-  try {
-    // Initialize a connection to the server
+  
+  if ( !Camera.open() ) { throw "Error opening the camera"; }
+  Camera.grab();
+  Camera.retrieve(frame);
+  Camera.release();
+  cv::imwrite("Tyler_Norlund_client.png", frame);
+  frame = (frame.reshape(0,1));
+  imageSize = frame.total()*frame.elemSize();
+  try
+  {
     TCPSocket sock(server, clientPort);
-    // Send the message to the server
-    sock.send(messageBuffer, messageLength);
-    // Receive the same message back. Since the message length is known, the 
-    // buffer can be used.
-    while (totalBytesReceived < messageLength) {
-      // When the bytesRecieved is negative, the packet received is no longer 
-      // a part of the buffer. At this point the packet is no longer what the
-      // server is sending back.
-      if ((bytesReceived = (sock.recv(echoBuffer, RCVBUFFERSIZE))) <= 0) {
-        std::cerr << "Unable to read";
-        exit(1);
-      }
-      totalBytesReceived += bytesReceived;
-      echoBuffer[bytesReceived] = '\0';
-      std::cout << echoBuffer;
-    }
-    std::cout << std::endl;  
+    std::cout << "IMG_HEIGHT * IMG_WIDTH * 3: " << IMG_HEIGHT * IMG_WIDTH * 3
+      << std::endl;
+    std::cout << "imageSize: " << imageSize << std::endl;
+    // std::cout << "frame.data: " << frame.data << std::endl;
+    std::ofstream myfile;
+    myfile.open ("client.txt");
+    myfile << frame.data;
+    myfile.close();
+    sock.send(frame.data, imageSize);
 
-  } catch(SocketException &e) {
-    std::cerr << e.what() << std::endl;
-    return 1;
+    std::cout << "frame.data type: " << typeid(frame.data).name() << std::endl;
   }
-
-  std::cout << "It's working!" << std::endl;
-
+  catch(const std::exception& e)
+  {
+    std::cerr << e.what() << '\n';
+  }
+  
   return 0;
 }
