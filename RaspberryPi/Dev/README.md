@@ -28,5 +28,7 @@ The front sheet supports the fans and the cameras.
 
 After assembling the three sheets, they are bolted together using standoffs. 
 
+![](Assets/MainSketch_FullyAssembled.png)
+
 ### Software
  tyler
